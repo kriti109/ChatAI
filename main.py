@@ -1,15 +1,15 @@
-from elevenlabs import generate, save, play, set_api_key
-import os
-from dotenv import load_dotenv
+#from src.stt import transcribeAudio
+from src.nlp import generateResponse
+from src.tts import speak
+#from src.ffmpegConfig import configureFfmpeg
 
-load_dotenv()
-set_api_key(os.getenv("ELEVENLABS_API_KEY"))
+while True:
+    #only for now it's text, we'll test all connections 
+    # and add stt layer over it
 
-audio = generate(
-    text="Hello from Veena. This is a voice test.",
-    voice="Rachel"
-)
-
-save(audio, "veena_test.mp3")
-play(audio)  # or use playsound if you want
-
+    userInput = input("You: ")
+    if userInput.lower() in ["exit", "quit"]:
+        break
+    response = generateResponse(userInput)
+    print("ChatAI: ", response)
+    speak(response)
