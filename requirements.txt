@@ -1,0 +1,16 @@
+# Core essentials
+pip>=24.0
+setuptools>=70.0.0
+wheel>=0.43.0
+
+# Voice (TTS/STT)
+elevenlabs==2.6.0
+openai-whisper==20250625
+
+# Env and HTTP
+python-dotenv==1.1.1
+httpx==0.28.1
+
+# NLP + Gemini
+pydantic==2.11.7
+google-generativeai==0.8.5

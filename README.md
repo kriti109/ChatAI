@@ -23,9 +23,8 @@ source .venv/Scripts/activate
 # .venv\Scripts\activate.bat
 Your prompt should now show (.venv) indicating the environment is active.
 
-ppip install --upgrade pip setuptools wheel
-
-pip install elevenlabs python-dotenv openai-whisper httpx pydantic sounddevice torch
+Run this code in your terminal to set the venv up:
+pip install -r requirements.txt
 
 3. Setup FFmpeg
 We use FFmpeg for audio/video processing. Instead of installing via package managers, we download and set up a local build in the project folder.
