@@ -9,7 +9,7 @@ elevenlabs = ElevenLabs(
   api_key=os.getenv("ELEVENLABS_API_KEY"),
 )
 
-def speak(text, voice="Rachel", model="eleven_turbo_v2"):
+def speak(text):
     audio = elevenlabs.text_to_speech.convert(
     text=text,
     voice_id="cgSgspJ2msm6clMCkdW9",
