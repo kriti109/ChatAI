@@ -1,0 +1,12 @@
+Summary:
+A representative from CareSecure Insurance called to discuss a policy with Alex. However, Alex was unavailable, and his son answered the call. The son advised the representative to call back in an hour, which she agreed to do.
+
+Conclusion:
+The agent will call Alex back in about an hour.
+
+Chat History:
+ChatAI: Good morning! This is Veena from CareSecure Insurance. Is this Alex, or someone available to discuss the policy?
+Customer: no, this is his son
+ChatAI: No problem at all. When would be a good time to reach Alex, please?
+Customer: try after an hour maybe
+ChatAI: Thank you. I'll give Alex a call back in about an hour then. Please feel free to reach out if anything changes. Have a great day!

@@ -1,31 +1,5 @@
-# import os
-# from openai import OpenAI
-# from dotenv import load_dotenv
-
-# load_dotenv()
-# client=OpenAI(
-#     api_key = os.getenv("OPENAI_API_KEY")
-# )
-
-# def generateResponse(text: str) -> str:
-#     try:
-#         response = client.responses.create(
-#             model="gpt-4o", 
-#             messages=[
-#                 {"role": "system", "content": "You are Veena, an insurance assistant. Reply in short, friendly, easy-to-understand answers. Stay professional and helpful."},
-#                 {"role": "user", "content": text}
-#             ],
-#             max_tokens=100
-#         )
-#         return response.choices[0].message.content.strip()
-#     except Exception as e:
-#         return f"Oops! Something went wrong: {e}"
-
-
-
 import os, datetime, google.generativeai as genai
 from dotenv import load_dotenv
-from src.tts import speak
 
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
@@ -33,63 +7,20 @@ model = genai.GenerativeModel("gemini-2.5-flash")
 
 os.makedirs("call_logs", exist_ok=True)
 
-# TRANSITIONS = {
-# "1.0": ["2.0", "3.0"],
-# "2.0": ["2.1", "2.2", "4.0", "5.0", "6.0", "7.0", "8.0", "9.0"],
-# "2.1": ["5.0", "7.0", "8.0"],
-# "2.2": ["5.0", "7.0", "8.0"],
-# "3.0": ["9.0"],
-# "4.0": ["9.0"],
-# "5.0": ["5.1", "6.0", "9.0"],
-# "5.1": ["6.0", "9.0"],
-# "6.0": ["6.1", "9.0"],
-# "6.1": ["9.0"],
-# "7.0": ["7.1", "7.2", "5.0", "8.0", "9.0"],
-# "7.1": ["5.0", "3.0", "9.0"],
-# "7.2": ["5.0", "8.0", "9.0"],
-# "8.0": ["8.1", "8.2", "3.0", "9.0"],
-# "8.1": ["5.0", "7.0", "3.0", "9.0"],
-# "8.2": ["5.0", "7.0", "3.0", "9.0"],
-# "9.0": []
-# }
-
-# BATCHES = {
-# "1.0": f"Good morning! This is Veena from CareSecure Insurance. Am I speaking to {self.customer_name}, or is someone else available to talk about the policy?",
-# "2.0": "Your policy is in discontinuance due to non-payment. Would you like to resume it?",
-# "2.1": "Is there a reason you're unsure about continuing? I'm happy to clarify anything before we proceed.",
-# "2.2": "Would it help if I explained what restarting your policy would provide?",
-# "3.0": "No problem. When would be a convenient time for me to call you back?",
-# "4.0": "You can request your policy bond by sending 'BOND' via WhatsApp to 8806727272.",
-# "5.0": "Would you like to pay online, via cheque, or request a cash collection?",
-# "5.1": "I can send you the payment link on WhatsApp or SMS if that makes it easier.",
-# "6.0": "Thanks for the payment! Could you please share the transaction reference or payment date?",
-# "6.1": "Great, I'll just verify it. Is there anything else you'd like to check in the meantime?",
-# "7.0": "We understand financial issues. We can offer monthly payments or EMI to help continue the policy.",
-# "7.1": "Would it help if I paused the policy temporarily instead of canceling it outright?",
-# "7.2": "Is there someone in your family who might assist with continuing the plan temporarily?",
-# "8.0": "Discontinuing will cancel your life cover and reduce returns. Can I help you reconsider?",
-# "8.1": "Would it help if I gave you a quick comparison of benefits if you continue versus discontinue?",
-# "8.2": "It is your decision — but you have already built up value. I would love to help you keep that secure.",
-# "9.0": "Thank you for your time. Feel free to reach out for help. Have a great day!"
-# }
-
 class Conversation:
     def __init__(self):
         self.chat = model.start_chat(history=[])
         self.current_batch = "1.0"
         self.history = []
-        self.customer_name = "Alex"     # We can later make this dynamic using certain command arguments or another directory storing names
+        self.customer_name = "Alex"
         self.system_persona = (
             "You are Veena, an empathetic and professional insurance assistant calling on behalf of CareSecure Insurance. "
             "You speak in a warm, concise, easy-to-understand manner. Stay polite, helpful, and gently persuasive when needed. "
-            "Always maintain professionalism and encourage the customer to stay informed about their policy. "
+            "Always maintain professionalism and encourage the customer to stay informed about and continue their policy. "
             f"You're calling {self.customer_name} to discuss why they didn't pay and if something could be done about it"
         )
         self.TRANSITIONS = {
-            """
-            Logic branching for how to proceed after taking in the user input, added scenarios so that the conversation is guided
-            """
-            "1.0": ["2.0", "3.0"], # Proceed or reschedule
+            "1.0": ["2.0", "3.0"],
             "2.0": ["2.1", "4.0", "5.0", "6.0", "7.0", "8.0", "9.0"],
             "2.1": ["5.0", "7.0", "8.0"],
             "3.0": ["9.0"],
@@ -101,34 +32,83 @@ class Conversation:
             "8.0": ["8.1", "3.0", "9.0"],
             "8.1": ["5.0", "7.0", "3.0", "9.0"],
             "9.0": []
-            }
+        }
 
         self.BATCHES = {
-            "1.0": f"Good morning! This is Veena from CareSecure Insurance. Am I speaking to {self.customer_name}, or is someone else available to talk about the policy?",
-            "2.0": "Your policy is in discontinuance due to non-payment. Would you like to resume it?",
-            "2.1": "I understand this might come as a surprise. Are there any concerns you'd like to clarify before we proceed?",
-            "3.0": "No problem. When would be a convenient time for me to call you back?",
-            "4.0": "You can request your policy bond by sending 'BOND' via WhatsApp to 8806727272.",
-            "5.0": "Would you like to pay online, via cheque, or schedule a cash collection?",
-            "6.0": "Thanks for the payment! Could you share the transaction reference or payment date for our records?",
-            "7.0": "We understand financial challenges. If it helps, we can arrange smaller monthly payments or an EMI option. Would that work for you?",
-            "7.1": "We're here to support you. Is there a timeline by which you'd be comfortable resuming the policy?",
-            "8.0": "Discontinuing the policy will cancel your life cover and reduce returns. Would you like to reconsider or talk through alternatives?",
-            "8.1": "I appreciate your openness. To help you make a better decision, I can explain the benefits again or suggest flexible payment options.",
-            "9.0": "Thank you for your time. Feel free to reach out for help anytime. Have a great day!"
-        }
-    
+            "1.0": (
+                  "Hello and very Good Morning Sir, May I speak with Alex?\n"
+                  "My name is Veena and I am an Executive calling on behalf of ValuEnable Life Insurance Co. Ltd. "
+                  "This is a service call with regards to your life insurance policy. "
+                "Is this the right time to speak to you regarding the renewal of your policy?"
+             ),
+              "2.0": (
+                  "Let me start by confirming your policy details. Your policy is ValuEnable Life Secure Plan, insurance policy number 65892147, started on 25th September 2019, and you've paid ₹4,00,000 so far."
+                  "The premium of ₹1,00,000 due on 25th September 2024 is still pending, and your policy is currently in “Discontinuance” status, with no life insurance cover. Could you please let me know why you haven’t been able to pay the premium?"
+             ),
+                   
+             "2.1": (
+                  "I would like to inform you that the due date for renewal premium payment for your policy was on 25th September 2024. The grace period is over due to non-payment of the regular premium and you are losing the benefit of your plan. "
+                  "Would you like to know what your policy's benefits you could get if you resume paying premiums?"
+             ),
+             "3.0": (
+                  "When would be a convenient time to call you again to provide the information about your policy with us? Please can you give a time and date?Thank you sir/ma’am, I will arrange your call back at the given time."
+                  
+             ),
+             "4.0": (
+                 "You can download the policy bond through WhatsApp. "
+                   "Please send a message from your registered mobile number on 8806727272 and you will be able to download the policy bond."
+             ),
+             "5.0": (
+                 "May I know how you plan to make the payment? Will it be via cash, cheque, or online?\n"
+                 "If you wish, you can pay online now. We’ll send you a link, or you can visit our website. "
+                 "You can use Debit card, Credit card, Net banking, PhonePe, WhatsApp or Google Pay to make the payment.\n"
+                  "You can conveniently pay the premium from home without visiting the branch. I’m here to assist you with the digital payment process.\n"
+                 "I’m noting your preference. I’ll send you a payment link for easy processing.\n"
+                 "As confirmed, you’ll pay the premium on 25th September 2024 at 10:00 AM via online transfer. "
+                 "Please ensure timely payment to maintain your policy benefits. We’ll call to confirm the payment status."
+             ),
+             "6.0": (
+                  "Thank you for making the payment. May I know when you made the payment?\n"
+                  "May I know where you made the payment (e.g., online, cheque, or cash)?\n"
+                 "Could you please provide the transaction ID or reference ID? For cheque payments, we’ll need the cheque number. "
+                 "I can assist with further tracking if needed."
+             ),
+             "7.0": (
+                 "I understand your concern. To achieve your financial goals, staying invested is key. "
+                 "You can pay via credit card, EMI, or change your payment mode to monthly. "
+                 "Can you arrange the premium to continue benefits?"
+             ),
+             "7.1": (
+                 "Would it help if I explain the flexible payment options again or tell you when we can follow up next?"
+             ),
+             "8.0": (
+                 "You can opt for the Partial Withdrawal option after completing 5 years of the policy i.e., lock-in period. "
+                 "If premiums stop before the lock-in ends, the policy will discontinue and growth will be limited to 4–4.5% returns. "
+                   "You will lose your life cover of ₹10,00,000. If you continue with this policy till maturity, you will receive ₹5,53,089. "
+                  "Would you be willing to pay your premium now?"
+             ),
+             "8.1": (
+                 "I’ll update the details in our CRM."
+             ),
+             "9.0": (
+                 "For any further assistance with your policy, feel free to call our helpline at 1800 209 7272, "
+                 "message us on WhatsApp at 8806 727272, mail us, or visit our website. "
+                 "Thank you for your valuable time. Have a great day ahead."
+             )
+         }
+
+
     def paraphrase(self, text: str) -> str:
         prompt = (
             f"System persona: {self.system_persona}\n"
-            f"Paraphrase the following in under 25 words, natural tone:\n\n{text}"
+            f"Paraphrase the following in natural tone:\n\n{text}"
         )
         try:
             response = self.chat.send_message(prompt)
             return response.text.strip()
-        except Exception as e:
+        except Exception:
             return text
-    
+
     def converse_naturally(self, user_input: str, script_line: str) -> str:
         prompt = (
             f"System persona: {self.system_persona}\n"
@@ -139,14 +119,13 @@ class Conversation:
         try:
             response = self.chat.send_message(prompt)
             return response.text.strip()
-        except Exception as e:
+        except Exception:
             return script_line
-        
+
     def get_next_batch(self, user_input: str) -> str:
         options = self.TRANSITIONS.get(self.current_batch, [])
         if not options:
-            "9.0"
-
+            return "9.0"
         prompt = (
             f"System persona: {self.system_persona}\n"
             f"Current batch: {self.current_batch}\n"
@@ -163,19 +142,19 @@ class Conversation:
         except:
             pass
         return self.current_batch
-    
+
     def summarize_call(self) -> tuple[str, str]:
         conversation = "\n".join(self.history)
         try:
             summary_prompt = f"Summarize the following call transcript in 3 sentences:\n{conversation}"
-            conclusion_prompt = f"Based on this call, what decision did the agent and the customer cme to? Keep it short. \n{conversation}"
+            conclusion_prompt = f"Based on this call, what decision did the agent and the customer come to? Keep it short. \n{conversation}"
             summary = model.generate_content(summary_prompt).text.strip()
             conclusion = model.generate_content(conclusion_prompt).text.strip()
             return summary, conclusion
         except Exception:
             return "Summary not available.", "Conclusion not available."
-    
-    def save_logs(self):
+
+    '''def save_logs(self):
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         file_path = f"call_logs/call_log_{timestamp}.txt"
         summary, conclusion = self.summarize_call()
@@ -186,35 +165,57 @@ class Conversation:
             f.write(f"Chat History:\n")
             for line in self.history:
                 f.write(line + "\n")
-        print(f"\n Log saved: {file_path}")
+        print(f"\nLog saved: {file_path}")'''
 
     def start(self):
-        opening = self.paraphrase(self.BATCHES[self.current_batch])
+        if self.current_batch == "1.0":
+            opening = f"Hello and very Good Morning Sir, May I speak with {self.customer_name}?"
+        else:
+            opening = self.paraphrase(self.BATCHES[self.current_batch])
         self.history.append(f"ChatAI: {opening}")
         print("ChatAI:", opening)
-        speak(opening)
+          
 
         while True:
             user = input("You: ")
             self.history.append(f"Customer: {user}")
+
             if user.lower() in {"exit", "quit"}:
                 print("ChatAI: Ending the call. Take care!")
                 break
 
+            # Check if someone else is speaking
+            if "not alex" in user.lower():
+                if any(word in user.lower() for word in ["son", "daughter", "kid", "child", "im his son", "i am his daughter"]):
+                    response = "Hi there, when can i talk with your father?"
+                    self.history.append(f"ChatAI: {response}")
+                    print("ChatAI:", response)
+                    continue
+                else:
+                    response = "Oh, are you available to talk about the policy?"
+                    self.history.append(f"ChatAI: {response}")
+                    print("ChatAI:", response)
+
+                    # Transition directly to payment batch
+                    self.current_batch = "5.0"
+                    payment_msg = self.converse_naturally(user, self.BATCHES["5.0"])
+                    self.history.append(f"ChatAI: {payment_msg}")
+                    print("ChatAI:", payment_msg)
+                    continue
+
             next_batch = self.get_next_batch(user)
             if next_batch == self.current_batch:
-                steer = self.converse_naturally(user ,"Could you help me understand better?")
+                steer = self.converse_naturally(user, "Could you help me understand better?")
                 self.history.append(f"ChatAI: {steer}")
                 print("ChatAI: ", steer)
-                speak(steer)
                 continue
-            
+
             self.current_batch = next_batch
-            reply = self.converse_naturally(user ,self.BATCHES[next_batch])
+            reply = self.converse_naturally(user, self.BATCHES[next_batch])
             self.history.append(f"ChatAI: {reply}")
             print("ChatAI:", reply)
-            speak(reply)
 
             if next_batch == "9.0":
                 break
-        self.save_logs()
+
+        'self.save_logs()'
