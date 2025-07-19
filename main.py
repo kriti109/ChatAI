@@ -7,6 +7,7 @@ from src.nlp import Conversation
 
 # while True:
     #only for now it's text, we'll test all connections 
+    # hopefully this works 
     # and add stt layer over it
 
     # userInput = input("You: ")
