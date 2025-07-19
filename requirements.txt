@@ -1,16 +1,25 @@
-# Core essentials
+# Core Python Packaging
 pip>=24.0
 setuptools>=70.0.0
 wheel>=0.43.0
 
-# Voice (TTS/STT)
+# Voice - Text-to-Speech and Speech-to-Text
 elevenlabs==2.6.0
 openai-whisper==20250625
+sounddevice==0.4.6
+scipy==1.13.0
+numpy==1.26.4
 
-# Env and HTTP
+# Audio Tools
+tempfile2==0.0.5
+
+# Google Gemini & NLP
+google-generativeai==0.8.5
+pydantic==2.11.7
+
+# Env & HTTP
 python-dotenv==1.1.1
 httpx==0.28.1
 
-# NLP + Gemini
-pydantic==2.11.7
-google-generativeai==0.8.5
+# For suppressing ALSA warnings (if needed)
+warnings-filter==0.1.2
