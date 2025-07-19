@@ -137,6 +137,7 @@ source .venv/bin/activate
 # Or if on windows:
 .venv\Scripts\activate.bat
 pip install -r requirements.txt
+python main.py
 ```
 
 make a .env file in the root directory and put these values in
