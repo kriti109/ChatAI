@@ -1,5 +1,4 @@
-#from src.stt import transcribeAudio
-# from src.nlp import generateResponse
+import os
 from src.nlp import Conversation
 #from src.ffmpegConfig import configureFfmpeg
 
@@ -17,6 +16,7 @@ from src.nlp import Conversation
     # print("ChatAI: ", response)
     # speak(response)
 
+os.environ["ALSA_LOGLEVEL"] = "none"
 
 def chat():
     session = Conversation()

@@ -1,6 +1,12 @@
 import os, datetime, google.generativeai as genai
 from dotenv import load_dotenv
 from src.tts import speak
+from src.stt import record_input_for
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+
+
+os.environ["ALSA_LOGLEVEL"] = "none"
 
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
@@ -179,7 +185,15 @@ class Conversation:
           
 
         while True:
-            user = input("You: ")
+            # user = input("You: ")
+            try:
+                user = record_input_for(8) or ""
+            except Exception as e:
+                print("Transcription error:", e)
+                user = ""
+            print(f"You: {user}")
+            if not user:
+                continue
             self.history.append(f"Customer: {user}")
 
             if user.lower() in {"exit", "quit"}:
