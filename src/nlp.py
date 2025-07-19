@@ -1,5 +1,6 @@
 import os, datetime, google.generativeai as genai
 from dotenv import load_dotenv
+from src.tts import speak
 
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
@@ -174,6 +175,7 @@ class Conversation:
             opening = self.paraphrase(self.BATCHES[self.current_batch])
         self.history.append(f"ChatAI: {opening}")
         print("ChatAI:", opening)
+        speak(opening)
           
 
         while True:
@@ -191,6 +193,7 @@ class Conversation:
                     response = "Hi there! Could you tell me when would be a good time to speak with your father?"
                     self.history.append(f"ChatAI: {response}")
                     print("ChatAI:", response)
+                    speak(response)
         
                     user = input("You: ")
                     self.history.append(f"Customer: {user}")
@@ -199,18 +202,21 @@ class Conversation:
                     closing = self.BATCHES["9.0"]
                     self.history.append(f"ChatAI: {closing}")
                     print("ChatAI:", closing)
+                    speak(closing)
                     break
 
                 else:
                     response = "Oh, are you available to talk about the policy?"
                     self.history.append(f"ChatAI: {response}")
                     print("ChatAI:", response)
+                    speak(response)
 
                     # Transition directly to payment batch
                     self.current_batch = "5.0"
                     payment_msg = self.converse_naturally(user, self.BATCHES["5.0"])
                     self.history.append(f"ChatAI: {payment_msg}")
                     print("ChatAI:", payment_msg)
+                    speak(payment_msg)
                     continue
 
             next_batch = self.get_next_batch(user)
@@ -218,12 +224,14 @@ class Conversation:
                 steer = self.converse_naturally(user, "Could you help me understand better?")
                 self.history.append(f"ChatAI: {steer}")
                 print("ChatAI: ", steer)
+                speak(steer)
                 continue
 
             self.current_batch = next_batch
             reply = self.converse_naturally(user, self.BATCHES[next_batch])
             self.history.append(f"ChatAI: {reply}")
             print("ChatAI:", reply)
+            speak(reply)
 
             if next_batch == "9.0":
                 break
